@@ -2,9 +2,8 @@
 
 pragma solidity >=0.8.2 <0.9.0;
 
-contract LedgerBalance {
+contract WorldBank {
    
-   address admin;
    address payable public owner;
    uint lastRun = block.timestamp;
 
@@ -20,17 +19,17 @@ contract LedgerBalance {
    mapping(address => Loan) public _HomeDetails;
    mapping(address => Loan) public _NigiDetails;
 
-// =============================================Deposit===================================================================
+// ============================================Deposit=====================================================================
    function _Deposit(uint Amount) public {
-      require(address(this).balance != 0,"Insufficient bank fund");
-      balances[msg.sender] += Amount;
+    require(address(this).balance != 0,"Insufficient bank fund");
+        balances[msg.sender] += Amount;
    }
 //=============================================Withdraw==================================================================== 
    function _Withdraw(uint withdrawAmt) public{
     require(address(this).balance != 0,"Insufficient bank fund");
     require(balances[msg.sender] != 0,"Insufficient balance");
     require(balances[msg.sender] >= withdrawAmt,"Insuficient balance"); 
-       balances[msg.sender] -= withdrawAmt;
+        balances[msg.sender] -= withdrawAmt;
    }
 // ============================================Loan========================================================================
      function CarLoan(uint _LoanAmount,uint _month) public {
@@ -42,10 +41,13 @@ contract LedgerBalance {
         
         owner.transfer(_LoanAmount);
         balances[msg.sender] += _LoanAmount;
-        _CarDetails[msg.sender].Loan_Amount = _LoanAmount;
-        _CarDetails[msg.sender].total_Amount = totalAmount; 
-        _CarDetails[msg.sender].Pending_Emi = _month; 
-        _CarDetails[msg.sender].MonthlyPayment = monthlyPayment1;  
+        Loan memory details=_CarDetails[msg.sender];
+        details.Loan_Amount = _LoanAmount;
+        details.total_Amount = totalAmount; 
+        details.Pending_Emi = _month; 
+        details.MonthlyPayment = monthlyPayment1;  
+        _CarDetails[msg.sender]=details;
+
     }
 
       function HomeLoan(uint _LoanAmount,uint _month) public {
@@ -57,10 +59,12 @@ contract LedgerBalance {
         
         owner.transfer(_LoanAmount);
         balances[msg.sender] += _LoanAmount;
-        _HomeDetails[msg.sender].Loan_Amount = _LoanAmount;
-        _HomeDetails[msg.sender].total_Amount = totalAmount; 
-        _HomeDetails[msg.sender].Pending_Emi = _month; 
-        _HomeDetails[msg.sender].MonthlyPayment = monthlyPayment1;  
+        Loan memory details=_HomeDetails[msg.sender];
+        details.Loan_Amount = _LoanAmount;
+        details.total_Amount = totalAmount; 
+        details.Pending_Emi = _month; 
+        details.MonthlyPayment = monthlyPayment1;  
+        _HomeDetails[msg.sender]=details; 
     }
 
       function NigiLoan(uint _LoanAmount,uint _month) public {
@@ -72,57 +76,65 @@ contract LedgerBalance {
 
         owner.transfer(_LoanAmount);
         balances[msg.sender] += _LoanAmount;
-        _NigiDetails[msg.sender].Loan_Amount = _LoanAmount; 
-        _NigiDetails[msg.sender].total_Amount = totalAmount;
-        _NigiDetails[msg.sender].Pending_Emi = _month; 
-        _NigiDetails[msg.sender].MonthlyPayment = monthlyPayment1;  
+        Loan memory details=_NigiDetails[msg.sender];
+        details.Loan_Amount = _LoanAmount;
+        details.total_Amount = totalAmount; 
+        details.Pending_Emi = _month; 
+        details.MonthlyPayment = monthlyPayment1;  
+        _NigiDetails[msg.sender]=details;  
     }
 
-// ==========================================================Emi===================================================================
+// ============================================Pay-Emi=====================================================================
 
     function carLoan() internal {
-        require(block.timestamp - lastRun >  5 seconds , 'Need to wait 5 seconds');
-        require(_CarDetails[msg.sender].Pending_Emi != 0,"didn't have any car loan");
-          balances[msg.sender] -= _CarDetails[msg.sender].MonthlyPayment;
-          _CarDetails[msg.sender].Pending_Emi -= 1;
-
+        require(block.timestamp - lastRun >  5 seconds , "Need to wait 5 seconds");
+        Loan memory details=_CarDetails[msg.sender];
+        require(details.Pending_Emi != 0,"Didn't have any car loan");
+          balances[msg.sender] -= details.MonthlyPayment;
+          details.Pending_Emi -= 1;
+           
           lastRun = block.timestamp;
 
-         if(_CarDetails[msg.sender].Pending_Emi == 0){
-          _CarDetails[msg.sender].total_Amount = 0;
-          _CarDetails[msg.sender].MonthlyPayment = 0;
-          _CarDetails[msg.sender].Loan_Amount = 0; 
+        if(details.Pending_Emi == 0){
+           details.total_Amount = 0;
+           details.MonthlyPayment = 0;
+           details.Loan_Amount = 0;
       }
+      _CarDetails[msg.sender]=details;
     }
 
     function homeLoan() internal {
-        require(block.timestamp - lastRun >  5 seconds, 'Need to wait 5 seconds');
-        require(_HomeDetails[msg.sender].Pending_Emi != 0,"didn't have any home loan");
-          balances[msg.sender] -= _HomeDetails[msg.sender].MonthlyPayment;
-          _HomeDetails[msg.sender].Pending_Emi -= 1;
-
+        require(block.timestamp - lastRun >  5 seconds, "Need to wait 5 seconds");
+        Loan memory details=_HomeDetails[msg.sender];
+        require(details.Pending_Emi != 0,"Didn't have any home loan");
+          balances[msg.sender] -= details.MonthlyPayment;
+          details.Pending_Emi -= 1;
+         
         lastRun = block.timestamp;
 
-         if(_HomeDetails[msg.sender].Pending_Emi == 0){
-          _HomeDetails[msg.sender].total_Amount = 0;
-          _HomeDetails[msg.sender].MonthlyPayment = 0;
-          _HomeDetails[msg.sender].Loan_Amount = 0; 
+        if(details.Pending_Emi == 0){
+          details.total_Amount = 0;
+          details.MonthlyPayment = 0;
+          details.Loan_Amount = 0;  
       }
+      _HomeDetails[msg.sender]=details;
     }
 
     function nigiLoan() internal {
-        require(block.timestamp - lastRun >  5 seconds, 'Need to wait 5 seconds');
-        require(_NigiDetails[msg.sender].Pending_Emi != 0,"didn't have any nigi loan");
-          balances[msg.sender] -= _NigiDetails[msg.sender].MonthlyPayment;
-          _NigiDetails[msg.sender].Pending_Emi -= 1;
+        require(block.timestamp - lastRun >  5 seconds, "Need to wait 5 seconds");
+        Loan memory details=_NigiDetails[msg.sender];
+        require(details.Pending_Emi != 0,"Didn't have any nigi loan");
+          balances[msg.sender] -= details.MonthlyPayment;
+          details.Pending_Emi -= 1;
 
           lastRun = block.timestamp;
 
-         if(_NigiDetails[msg.sender].Pending_Emi == 0){
-          _NigiDetails[msg.sender].total_Amount = 0;
-          _NigiDetails[msg.sender].MonthlyPayment = 0;
-          _NigiDetails[msg.sender].Loan_Amount = 0; 
+        if(details.Pending_Emi == 0){
+          details.total_Amount = 0;
+          details.MonthlyPayment = 0;
+          details.Loan_Amount = 0;  
       }
+       _NigiDetails[msg.sender]=details;
     }
 
 function PayEmi(string memory Loan_Type) public {
@@ -131,7 +143,8 @@ function PayEmi(string memory Loan_Type) public {
         }
         else if (keccak256(bytes(Loan_Type)) == keccak256(bytes("home")))  {
             homeLoan();
-        } else if (keccak256(bytes(Loan_Type)) == keccak256(bytes("nigi")))  {
+        } 
+        else if (keccak256(bytes(Loan_Type)) == keccak256(bytes("nigi")))  {
             nigiLoan();
         } 
         else {
@@ -139,14 +152,14 @@ function PayEmi(string memory Loan_Type) public {
         }
     }
 
-//=================================================Admin================================================================
+//=============================================Admin=======================================================================
+
    constructor() {
-      admin = msg.sender; 
       owner = payable(msg.sender);
     }
      
     modifier Onlyadmin{
-      require(admin==msg.sender,"Not correct admin");
+      require(owner==msg.sender,"Not correct admin");
       require(msg.value != 0,"Zero value sent");
       _;
     }
@@ -155,19 +168,12 @@ function PayEmi(string memory Loan_Type) public {
       uint contBal = address(this).balance;
       return contBal;
     }
-//================================================ContractBal============================================================
+//=============================================ContractBal=================================================================
 function contractBal() public view returns(uint)
     {
         uint contBal = address(this).balance;
         return contBal;
     }
-}
-contract Updater {
-   function Deposit() public returns (uint) {
-      LedgerBalance ledgerBalance = new LedgerBalance();
-      ledgerBalance._Deposit(10);
-      return ledgerBalance.balances(address(this));
-   }
 }
 
 
