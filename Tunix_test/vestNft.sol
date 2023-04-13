@@ -43,7 +43,7 @@ contract ERC1155market is ERC1155, ERC1155Burnable {
     }
 }
 
-// ---------------------------------------------------------------------------------------------------------------------------------
+// ---------------------------------------------------------Common_Market_place------------------------------------------------------------------------
 contract CommonMarket{
     ERC721market obj = new ERC721market();
     ERC1155market obj1 = new ERC1155market();
@@ -118,7 +118,7 @@ contract CommonMarket{
 // --------------------------------------------------------------------------setForSale---------------------------------------------------------
     function setForSell(address owner,uint256 _id, uint256 _amount,uint256 _Prize) public {
         
-        ListedToken memory details = tokenDetails[owner][_id];
+        ListedToken memory details = tokenDetails[owner][_id];                                            // create copy for state declared mapping of TokenDetails of srtuct type ListedToken
         require(tokenDetails[owner][_id].tokenId == _id,"Didn't have this kind of token");
 
         if(tokenDetails[owner][_id].amount == 1){
@@ -155,7 +155,7 @@ contract CommonMarket{
         uint256 Tp =TokenPrize[owner][TokenId];
 
         if(amount == 1){
-            ListedToken memory details = tokenDetails[owner][TokenId];
+            ListedToken memory details = tokenDetails[owner][TokenId];                                 // create copy for state declared mapping of TokenDetails of srtuct type ListedToken
             require(Prize == TokenPrize[owner][TokenId],"Invalid Prize");
             require(tokenDetails[owner][TokenId].Prize != 0 || tokenDetails[owner][TokenId].amount != 0,"This TokenId is not for sale");
             
@@ -170,7 +170,7 @@ contract CommonMarket{
                 details.Prize = 0;
                 tokenDetails[owner][TokenId] = details;
 
-            ListedToken memory Details = tokenDetails[Buyer][TokenId];
+            ListedToken memory Details = tokenDetails[Buyer][TokenId];                                 // create copy for state declared mapping of TokenDetails of srtuct type ListedToken
                 Details.MarketType = "ERC721";
                 Details.tokenId = TokenId;
                 Details.Prize = 0;
@@ -183,7 +183,7 @@ contract CommonMarket{
         }
         else{
 
-            ListedToken memory details = tokenDetails[owner][TokenId];
+            ListedToken memory details = tokenDetails[owner][TokenId];                               // create copy for state declared mapping of TokenDetails of srtuct type ListedToken
             require(Prize == TokenPrize[owner][TokenId],"Invalid Prize");
                 obj1.safeTransferFrom(owner,Buyer,TokenId,amount,'0x00');
                 details.MarketType = "  ";
@@ -196,9 +196,9 @@ contract CommonMarket{
                 Tp -= (Tp * 10) / 100;
                 Rovality[address(this)] = details.Prize - Tp;
                 details.wallet = Tp;
-                tokenDetails[owner][TokenId] = details;
+                tokenDetails[owner][TokenId] = details;                                              
 
-            ListedToken memory detail = tokenDetails[Buyer][TokenId];
+            ListedToken memory detail = tokenDetails[Buyer][TokenId];                               // create copy for state declared mapping of TokenDetails of srtuct type ListedToken
                 detail.MarketType = "ERC1155";
                 detail.tokenId = TokenId;
                 detail.amount = amount;
@@ -213,7 +213,7 @@ contract CommonMarket{
     uint256 time ;
     
     function _VestNft(uint256 TokenId,uint256 amount, uint256 duration) public {
-        ListedToken memory details = tokenDetails[msg.sender][TokenId];
+        ListedToken memory details = tokenDetails[msg.sender][TokenId];                           // create copy for state declared mapping of TokenDetails of srtuct type ListedToken
 
         require(details.tokenId == TokenId,"tokenId is not minted");
         require(details.owner == msg.sender," only Token Owner can vest nft");
@@ -233,7 +233,7 @@ contract CommonMarket{
     }
 
     function getVestNft(address owner,uint256 TokenId) public {
-        ListedToken memory details = tokenDetails[owner][TokenId];
+        ListedToken memory details = tokenDetails[owner][TokenId];                             // create copy for state declared mapping of TokenDetails of srtuct type ListedToken
         VestNft memory detail = vestNft[address(this)][owner];
         require(Token[owner] == TokenId,"owner don't have this tokenId");
         require(block.timestamp >= time, "Nft is Locked Wait for Taken duration for unlock");
